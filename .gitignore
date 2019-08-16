@@ -1,0 +1,9 @@
+xlogger.log.lck
+.idea/
+emoji/
+image/
+*.log
+*.class
+*.jpg
+target/
+*.iml

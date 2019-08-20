@@ -308,11 +308,11 @@ final class WeChatApi {
      * @return 获取到的图片文件
      */
     File webwxgetmsgimg(long msgId, String type,String path) {
-        String uri = folder.getAbsolutePath() + File.separator + "user" +File.separator + path + File.separator;
+        String uri = folder.getAbsolutePath() + File.separator + "image" +File.separator + path + File.separator;
         File tmp = new File(uri);
         if (!tmp.exists()) {// 判断目录是否存在
             if (!tmp.mkdirs()) {// 创建目标目录
-                uri = folder.getAbsolutePath() + File.separator;
+                uri = folder.getAbsolutePath() + File.separator+ "image"+ File.separator;
             }
         }
 

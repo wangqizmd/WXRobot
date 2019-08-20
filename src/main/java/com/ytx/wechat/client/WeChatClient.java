@@ -516,7 +516,7 @@ public final class WeChatClient {
     public WXImage fetchImage(@Nonnull WXImage wxImage) {
         String path = "image";
         if(wxImage.fromGroup !=null){
-            path = wxImage.fromGroup.name + File.separator + path ;
+            path = wxImage.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
         }
         wxImage.origin = wxAPI.webwxgetmsgimg(wxImage.id, "big",path);
         return wxImage;
@@ -973,9 +973,9 @@ public final class WeChatClient {
                         wxImage.imgHeight = msg.ImgHeight;
                         String path = "image";
                         if(wxImage.fromGroup !=null){
-                            path = wxImage.fromGroup.name + File.separator + path ;
+                            path = wxImage.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                         }else if(wxImage.toContact instanceof WXGroup){
-                            path = wxImage.toContact.name + File.separator + path ;
+                            path = wxImage.toContact.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                         }
                         wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId,"big",path);
                         return wxImage;
@@ -1016,9 +1016,9 @@ public final class WeChatClient {
                         wxVideo.videoLength = msg.PlayLength;
                         String path = "video";
                         if(wxVideo.fromGroup !=null){
-                            path = wxVideo.fromGroup.name + File.separator + path ;
+                            path = wxVideo.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                         }else if(wxVideo.toContact instanceof WXGroup){
-                            path = wxVideo.toContact.name + File.separator + path ;
+                            path = wxVideo.toContact.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                         }
                         wxVideo.image = wxAPI.webwxgetmsgimg(msg.MsgId,"slave",path);
                         return wxVideo;
@@ -1034,9 +1034,9 @@ public final class WeChatClient {
                             //非表情商店的表情，下载图片
                             String path = "emoji";
                             if(wxEmoji.fromGroup !=null){
-                                path = wxEmoji.fromGroup.name + File.separator + path ;
+                                path = wxEmoji.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }else if(wxEmoji.toContact instanceof WXGroup){
-                                path = wxEmoji.toContact.name + File.separator + path ;
+                                path = wxEmoji.toContact.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }
                             wxEmoji.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
                             wxEmoji.origin = wxEmoji.image;
@@ -1050,9 +1050,9 @@ public final class WeChatClient {
                             wxImage.imgHeight = msg.ImgHeight;
                             String path = "image";
                             if(wxImage.fromGroup !=null){
-                                path = wxImage.fromGroup.name + File.separator + path ;
+                                path = wxImage.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }else if(wxImage.toContact instanceof WXGroup){
-                                path = wxImage.toContact.name + File.separator + path ;
+                                path = wxImage.toContact.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }
                             wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
                             wxImage.origin = wxImage.image;
@@ -1074,9 +1074,9 @@ public final class WeChatClient {
                             wxEmoji.imgHeight = msg.ImgHeight;
                             String path = "emoji";
                             if(wxEmoji.fromGroup !=null){
-                                path = wxEmoji.fromGroup.name + File.separator + path ;
+                                path = wxEmoji.fromGroup.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }else if(wxEmoji.toContact instanceof WXGroup){
-                                path = wxEmoji.toContact.name + File.separator + path ;
+                                path = wxEmoji.toContact.name.replaceAll("<[^>]+>", "") + File.separator + path ;
                             }
                             wxEmoji.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
                             wxEmoji.origin = wxEmoji.image;

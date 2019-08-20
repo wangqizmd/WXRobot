@@ -1,7 +1,8 @@
 package com.ytx.wechat.messageStrategy;
 
 import com.ytx.wechat.client.WeChatClient;
-import com.ytx.wechat.message.WXMessage;
+import com.ytx.wechat.entity.message.WXMessage;
+
 /**
  * 消息处理
  */

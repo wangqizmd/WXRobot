@@ -1,6 +1,11 @@
 package com.ytx.wechat.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ytx.wechat.protocol.*;
+import me.xuxiaoxiao.xtools.common.XTools;
+import me.xuxiaoxiao.xtools.common.http.executor.XHttpExecutor;
+import me.xuxiaoxiao.xtools.common.http.executor.impl.XHttpExecutorImpl;
+import me.xuxiaoxiao.xtools.common.http.executor.impl.XRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedInputStream;
@@ -21,7 +26,6 @@ final class WeChatApi {
     public static final String CFG_WORKDIR = WeChatClient.CFG_PREFIX + "workdir";
     public static final String CFG_WORKDIR_DEFAULT = "";
 
-    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private static final String[] HOSTS = {"wx.qq.com", "wx2.qq.com", "wx8.qq.com", "web.wechat.com", "web2.wechat.com"};
     private static final Pattern REX_LOGIN = Pattern.compile("<error>[\\s\\S]+</error>");
 
@@ -121,8 +125,8 @@ final class WeChatApi {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxinit", host));
         request.query("r", (int) (~(this.timeInit)));
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqInit(new BaseRequest(uin, sid, skey)))));
-        RspInit rspInit = GSON.fromJson(XTools.http(httpExecutor, request).string(), RspInit.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqInit(new BaseRequest(uin, sid, skey)))));
+        RspInit rspInit = JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspInit.class);
         this.skey = rspInit.SKey;
         this.synckey = rspInit.SyncKey;
         return rspInit;
@@ -138,8 +142,8 @@ final class WeChatApi {
     RspStatusNotify webwxstatusnotify(String userName, int notifyCode) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxstatusnotify", host));
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqStatusNotify(new BaseRequest(uin, sid, skey), notifyCode, userName))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspStatusNotify.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqStatusNotify(new BaseRequest(uin, sid, skey), notifyCode, userName))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspStatusNotify.class);
     }
 
     /**
@@ -153,7 +157,7 @@ final class WeChatApi {
         request.query("seq", 0);
         request.query("skey", this.skey);
         request.query("pass_ticket", this.passticket);
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspGetContact.class);
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspGetContact.class);
     }
 
     /**
@@ -162,13 +166,13 @@ final class WeChatApi {
      * @param contactList 要获取的联系人列表
      * @return 联系人的详细信息
      */
-    RspBatchGetContact webwxbatchgetcontact(List<Contact> contactList) {
+    RspBatchGetContact webwxbatchgetcontact(List<ReqBatchGetContact.Contact> contactList) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxbatchgetcontact", host));
         request.query("r", System.currentTimeMillis());
         request.query("type", "ex");
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqBatchGetContact(new BaseRequest(uin, sid, skey), contactList))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspBatchGetContact.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqBatchGetContact(new BaseRequest(uin, sid, skey), contactList))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspBatchGetContact.class);
     }
 
     /**
@@ -198,8 +202,8 @@ final class WeChatApi {
         request.query("sid", this.sid);
         request.query("skey", this.skey);
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSync(new BaseRequest(uin, sid, skey), this.synckey))));
-        RspSync rspSync = GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSync.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSync(new BaseRequest(uin, sid, skey), this.synckey))));
+        RspSync rspSync = JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspSync.class);
         if (rspSync.SyncKey != null && rspSync.SyncKey.List != null && !rspSync.SyncKey.List.isEmpty()) {
             this.synckey = rspSync.SyncKey;
         }
@@ -218,8 +222,8 @@ final class WeChatApi {
     RspSendMsg webwxsendmsg(ReqSendMsg.Msg msg) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxsendmsg", host));
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
     }
 
     /**
@@ -233,8 +237,8 @@ final class WeChatApi {
         request.query("fun", "async");
         request.query("f", "json");
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
     }
 
     /**
@@ -248,8 +252,8 @@ final class WeChatApi {
         request.query("fun", "async");
         request.query("f", "json");
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
     }
 
     /**
@@ -263,8 +267,8 @@ final class WeChatApi {
         request.query("fun", "sys");
         request.query("f", "json");
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
     }
 
     /**
@@ -278,8 +282,8 @@ final class WeChatApi {
         request.query("fun", "async");
         request.query("f", "json");
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqSendMsg(new BaseRequest(uin, sid, skey), msg))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspSendMsg.class);
     }
 
     /**
@@ -292,8 +296,8 @@ final class WeChatApi {
      */
     RspRevokeMsg webwxrevokemsg(long clientMsgId, long serverMsgId, String userName) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxrevokemsg", host));
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqRevokeMsg(new BaseRequest(uin, sid, skey), String.valueOf(clientMsgId), String.valueOf(serverMsgId), userName))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspRevokeMsg.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqRevokeMsg(new BaseRequest(uin, sid, skey), String.valueOf(clientMsgId), String.valueOf(serverMsgId), userName))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspRevokeMsg.class);
     }
 
     /**
@@ -304,7 +308,7 @@ final class WeChatApi {
      * @return 获取到的图片文件
      */
     File webwxgetmsgimg(long msgId, String type,String path) {
-        String uri = folder.getAbsolutePath() + File.separator + path + File.separator;
+        String uri = folder.getAbsolutePath() + File.separator + "user" +File.separator + path + File.separator;
         File tmp = new File(uri);
         if (!tmp.exists()) {// 判断目录是否存在
             if (!tmp.mkdirs()) {// 创建目标目录
@@ -394,8 +398,8 @@ final class WeChatApi {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxverifyuser", host));
         request.query("r", System.currentTimeMillis());
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqVerifyUser(new BaseRequest(uin, sid, skey), opCode, userName, verifyTicket, verifyContent))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspVerifyUser.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqVerifyUser(new BaseRequest(uin, sid, skey), opCode, userName, verifyTicket, verifyContent))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspVerifyUser.class);
     }
 
     /**
@@ -410,8 +414,8 @@ final class WeChatApi {
     RspOplog webwxoplog(int cmdId, int op, String userName, String remarkName) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxoplog", host));
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqOplog(new BaseRequest(uin, sid, skey), cmdId, op, userName, remarkName))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspOplog.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqOplog(new BaseRequest(uin, sid, skey), cmdId, op, userName, remarkName))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspOplog.class);
     }
 
     /**
@@ -427,8 +431,8 @@ final class WeChatApi {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxupdatechatroom", host));
         request.query("fun", fun);
         request.query("pass_ticket", this.passticket);
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqUpdateChatroom(new BaseRequest(uin, sid, skey), chatroom, fun, name, XTools.strJoin(memberList, ",")))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspUpdateChatroom.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqUpdateChatroom(new BaseRequest(uin, sid, skey), chatroom, fun, name, XTools.strJoin(memberList, ",")))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspUpdateChatroom.class);
     }
 
     /**
@@ -441,8 +445,8 @@ final class WeChatApi {
      */
     RspCheckUpload webwxcheckupload(File file, String fromUserName, String toUserName) {
         XRequest request = XRequest.POST(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxcheckupload", host));
-        request.content(new XRequest.StringContent(XRequest.MIME_JSON, GSON.toJson(new ReqCheckUpload(new BaseRequest(uin, sid, skey), file, fromUserName, toUserName))));
-        return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspCheckUpload.class);
+        request.content(new XRequest.StringContent(XRequest.MIME_JSON, JSONObject.toJSONString(new ReqCheckUpload(new BaseRequest(uin, sid, skey), file, fromUserName, toUserName))));
+        return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspCheckUpload.class);
     }
 
     /**
@@ -472,11 +476,11 @@ final class WeChatApi {
             request.content("lastModifiedDate", new Date(file.lastModified()));
             request.content("size", fileLength);
             request.content("mediatype", fileType);
-            request.content("uploadmediarequest", GSON.toJson(new ReqUploadMedia(new BaseRequest(uin, sid, skey, deviceId), clientMediaId, 2, fileLength, 0, fileLength, fileMd5, aesKey, signature, fromUserName, toUserName)));
+            request.content("uploadmediarequest", JSONObject.toJSONString(new ReqUploadMedia(new BaseRequest(uin, sid, skey, deviceId), clientMediaId, 2, fileLength, 0, fileLength, fileMd5, aesKey, signature, fromUserName, toUserName)));
             request.content("webwx_data_ticket", dataTicket);
             request.content("pass_ticket", XTools.strEmpty(passticket) ? "undefined" : passticket);
             request.content("filename", file);
-            return GSON.fromJson(XTools.http(httpExecutor, request).string(), RspUploadMedia.class);
+            return JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspUploadMedia.class);
         } else {
             RspUploadMedia rspUploadMedia = null;
             byte[] sliceBuffer = new byte[512 * 1024];
@@ -492,7 +496,7 @@ final class WeChatApi {
                     request.content("chunks", sliceCount);
                     request.content("chunk", sliceIndex);
                     request.content("mediatype", fileType);
-                    request.content("uploadmediarequest", GSON.toJson(new ReqUploadMedia(new BaseRequest(uin, sid, skey, deviceId), clientMediaId, 2, fileLength, 0, fileLength, fileMd5, aesKey, signature, fromUserName, toUserName)));
+                    request.content("uploadmediarequest", JSONObject.toJSONString(new ReqUploadMedia(new BaseRequest(uin, sid, skey, deviceId), clientMediaId, 2, fileLength, 0, fileLength, fileMd5, aesKey, signature, fromUserName, toUserName)));
                     request.content("webwx_data_ticket", dataTicket);
                     request.content("pass_ticket", XTools.strEmpty(passticket) ? "undefined" : passticket);
                     int readCount;
@@ -504,7 +508,7 @@ final class WeChatApi {
                         }
                     }
                     request.content("filename", slice);
-                    rspUploadMedia = GSON.fromJson(XTools.http(httpExecutor, request).string(), RspUploadMedia.class);
+                    rspUploadMedia = JSONObject.parseObject(XTools.http(httpExecutor, request).string(), RspUploadMedia.class);
                 }
             }
             return rspUploadMedia;

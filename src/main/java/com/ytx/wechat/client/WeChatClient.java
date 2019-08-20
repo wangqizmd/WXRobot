@@ -1,10 +1,19 @@
 package com.ytx.wechat.client;
 
 
+import com.sun.istack.internal.Nullable;
+import com.ytx.wechat.entity.contact.WXContact;
 import com.ytx.wechat.entity.contact.WXGroup;
+import com.ytx.wechat.entity.contact.WXUser;
+import com.ytx.wechat.entity.message.*;
+import com.ytx.wechat.protocol.*;
 import lombok.extern.slf4j.Slf4j;
+import me.xuxiaoxiao.xtools.common.XTools;
+import me.xuxiaoxiao.xtools.common.http.XHttpTools;
+import me.xuxiaoxiao.xtools.common.http.executor.impl.XRequest;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpCookie;
@@ -18,10 +27,8 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class WeChatClient {
     public static final String CFG_PREFIX = "me.xuxiaoxiao$chatapi-wechat$";
-    public static final String LOG_TAG = "chatapi-wechat";
 
     public static final String LOGIN_TIMEOUT = "登陆超时";
-    public static final String LISTEN_EXCEPTION = "监听异常";
 
     public static final int STATUS_EXCEPTION = -1;
     public static final int STATUS_READY = 0;
@@ -507,7 +514,11 @@ public final class WeChatClient {
      */
     @Nonnull
     public WXImage fetchImage(@Nonnull WXImage wxImage) {
-        wxImage.origin = wxAPI.webwxgetmsgimg(wxImage.id, "big","image");
+        String path = "image";
+        if(wxImage.fromGroup !=null){
+            path = wxImage.fromGroup.name + File.separator + path ;
+        }
+        wxImage.origin = wxAPI.webwxgetmsgimg(wxImage.id, "big",path);
         return wxImage;
     }
 
@@ -963,6 +974,8 @@ public final class WeChatClient {
                         String path = "image";
                         if(wxImage.fromGroup !=null){
                             path = wxImage.fromGroup.name + File.separator + path ;
+                        }else if(wxImage.toContact instanceof WXGroup){
+                            path = wxImage.toContact.name + File.separator + path ;
                         }
                         wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId,"big",path);
                         return wxImage;
@@ -1004,29 +1017,30 @@ public final class WeChatClient {
                         String path = "video";
                         if(wxVideo.fromGroup !=null){
                             path = wxVideo.fromGroup.name + File.separator + path ;
+                        }else if(wxVideo.toContact instanceof WXGroup){
+                            path = wxVideo.toContact.name + File.separator + path ;
                         }
                         wxVideo.image = wxAPI.webwxgetmsgimg(msg.MsgId,"slave",path);
                         return wxVideo;
                     }
                     case RspSync.AddMsg.TYPE_EMOJI: {
+                        WXEmoji wxEmoji = parseCommon(msg, new WXEmoji());
+                        wxEmoji.imgWidth = msg.ImgWidth;
+                        wxEmoji.imgHeight = msg.ImgHeight;
                         if (StringUtils.isEmpty(msg.Content) || msg.HasProductId > 0) {
                             //表情商店的表情，无法下载图片
-                            WXEmoji wxEmoji = parseCommon(msg, new WXEmoji());
-                            wxEmoji.imgWidth = msg.ImgWidth;
-                            wxEmoji.imgHeight = msg.ImgHeight;
                             return wxEmoji;
                         } else {
                             //非表情商店的表情，下载图片
-                            WXImage wxImage = parseCommon(msg, new WXImage());
-                            wxImage.imgWidth = msg.ImgWidth;
-                            wxImage.imgHeight = msg.ImgHeight;
                             String path = "emoji";
-                            if(wxImage.fromGroup !=null){
-                                path = wxImage.fromGroup.name + File.separator + path ;
+                            if(wxEmoji.fromGroup !=null){
+                                path = wxEmoji.fromGroup.name + File.separator + path ;
+                            }else if(wxEmoji.toContact instanceof WXGroup){
+                                path = wxEmoji.toContact.name + File.separator + path ;
                             }
-                            wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
-                            wxImage.origin = wxImage.image;
-                            return wxImage;
+                            wxEmoji.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
+                            wxEmoji.origin = wxEmoji.image;
+                            return wxEmoji;
                         }
                     }
                     case RspSync.AddMsg.TYPE_OTHER: {
@@ -1037,6 +1051,8 @@ public final class WeChatClient {
                             String path = "image";
                             if(wxImage.fromGroup !=null){
                                 path = wxImage.fromGroup.name + File.separator + path ;
+                            }else if(wxImage.toContact instanceof WXGroup){
+                                path = wxImage.toContact.name + File.separator + path ;
                             }
                             wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
                             wxImage.origin = wxImage.image;
@@ -1053,16 +1069,18 @@ public final class WeChatClient {
                             wxFile.fileSize = StringUtils.isEmpty(msg.FileSize) ? 0 : Long.valueOf(msg.FileSize);
                             return wxFile;
                         } else if (msg.AppMsgType == 8) {
-                            WXImage wxImage = parseCommon(msg, new WXImage());
-                            wxImage.imgWidth = msg.ImgWidth;
-                            wxImage.imgHeight = msg.ImgHeight;
+                            WXEmoji wxEmoji = parseCommon(msg, new WXEmoji());
+                            wxEmoji.imgWidth = msg.ImgWidth;
+                            wxEmoji.imgHeight = msg.ImgHeight;
                             String path = "emoji";
-                            if(wxImage.fromGroup !=null){
-                                path = wxImage.fromGroup.name + File.separator + path ;
+                            if(wxEmoji.fromGroup !=null){
+                                path = wxEmoji.fromGroup.name + File.separator + path ;
+                            }else if(wxEmoji.toContact instanceof WXGroup){
+                                path = wxEmoji.toContact.name + File.separator + path ;
                             }
-                            wxImage.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
-                            wxImage.origin = wxImage.image;
-                            return wxImage;
+                            wxEmoji.image = wxAPI.webwxgetmsgimg(msg.MsgId, "big",path);
+                            wxEmoji.origin = wxEmoji.image;
+                            return wxEmoji;
                         } else if (msg.AppMsgType == 2000) {
                             return parseCommon(msg, new WXMoney());
                         }

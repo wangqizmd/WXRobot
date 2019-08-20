@@ -1,11 +1,14 @@
 package com.ytx.wechat.entity.contact;
 
+import lombok.Data;
+
 import java.io.File;
 import java.io.Serializable;
 
 /**
  * 微信联系人
  */
+@Data
 public abstract class WXContact implements Serializable, Cloneable {
     public static final int CONTACT = 1;
     public static final int CONTACT_CHAT = 2;
@@ -48,57 +51,10 @@ public abstract class WXContact implements Serializable, Cloneable {
      */
     public int contactFlag;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    /**
+     * 权限,0-默认权限，1-指令模式，2-白名单，3-黑名单
+     */
+    public int permission;
 
-        WXContact wxContact = (WXContact) o;
 
-        if (id != null ? !id.equals(wxContact.id) : wxContact.id != null) {
-            return false;
-        }
-        if (name != null ? !name.equals(wxContact.name) : wxContact.name != null) {
-            return false;
-        }
-        if (namePY != null ? !namePY.equals(wxContact.namePY) : wxContact.namePY != null) {
-            return false;
-        }
-        if (nameQP != null ? !nameQP.equals(wxContact.nameQP) : wxContact.nameQP != null) {
-            return false;
-        }
-        if (avatarUrl != null ? !avatarUrl.equals(wxContact.avatarUrl) : wxContact.avatarUrl != null) {
-            return false;
-        }
-        if (avatarFile != null ? !avatarFile.equals(wxContact.avatarFile) : wxContact.avatarFile != null) {
-            return false;
-        }
-        return contactFlag == wxContact.contactFlag;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (namePY != null ? namePY.hashCode() : 0);
-        result = 31 * result + (nameQP != null ? nameQP.hashCode() : 0);
-        result = 31 * result + (avatarUrl != null ? avatarUrl.hashCode() : 0);
-        result = 31 * result + (avatarFile != null ? avatarFile.hashCode() : 0);
-        result = 31 * result + contactFlag;
-        return result;
-    }
-
-    @Override
-    public WXContact clone() {
-        try {
-            return (WXContact) super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
-        }
-    }
 }

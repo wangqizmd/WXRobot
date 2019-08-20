@@ -1,6 +1,6 @@
 package com.ytx.wechat.utils;
 
-import me.xuxiaoxiao.chatapi.wechat.entity.message.WXMessage;
+import com.ytx.wechat.entity.message.WXMessage;
 import org.apache.commons.lang3.StringUtils;
 
 

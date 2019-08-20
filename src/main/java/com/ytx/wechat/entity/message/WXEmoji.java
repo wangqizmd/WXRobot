@@ -1,10 +1,14 @@
 package com.ytx.wechat.entity.message;
 
+import lombok.Data;
+
+import java.io.File;
 import java.io.Serializable;
 
 /**
  * 微信表情商店表情消息，该类型的消息无法下载图片
  */
+@Data
 public class WXEmoji extends WXMessage implements Serializable, Cloneable {
     /**
      * 图片宽度
@@ -15,35 +19,12 @@ public class WXEmoji extends WXMessage implements Serializable, Cloneable {
      */
     public int imgHeight;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        WXEmoji wxEmoji = (WXEmoji) o;
-        if (imgWidth != wxEmoji.imgWidth) {
-            return false;
-        }
-        return imgHeight == wxEmoji.imgHeight;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + imgWidth;
-        result = 31 * result + imgHeight;
-        return result;
-    }
-
-    @Override
-    public WXEmoji clone() {
-        return (WXEmoji) super.clone();
-    }
+    /**
+     * 静态图消息中的缩略图，动态图消息中的原图
+     */
+    public File image;
+    /**
+     * 静态图获取原图之前为null，获取原图之后为原图，动态图一开始就是原图
+     */
+    public File origin;
 }

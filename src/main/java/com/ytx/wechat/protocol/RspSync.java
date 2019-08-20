@@ -1,7 +1,5 @@
 package com.ytx.wechat.protocol;
 
-import me.xuxiaoxiao.chatapi.wechat.protocol.RspInit.SyncKey;
-
 import java.util.ArrayList;
 
 public class RspSync {
@@ -16,9 +14,9 @@ public class RspSync {
     public ArrayList<RspInit.User> ModChatRoomMemberList;
     public Profile Profile;
     public int ContinueFlag;
-    public SyncKey SyncKey;
+    public RspInit.SyncKey SyncKey;
     public String Skey;
-    public SyncKey SyncCheckKey;
+    public RspInit.SyncKey SyncCheckKey;
 
     public static class Profile {
         public int BitFlag;

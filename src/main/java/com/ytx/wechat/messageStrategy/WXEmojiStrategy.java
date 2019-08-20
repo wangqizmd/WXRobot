@@ -1,6 +1,7 @@
 package com.ytx.wechat.messageStrategy;
 
 import com.ytx.wechat.client.WeChatClient;
+import com.ytx.wechat.entity.contact.WXGroup;
 import com.ytx.wechat.entity.message.WXMessage;
 import com.ytx.wechat.utils.GroupMsgUtil;
 import lombok.extern.slf4j.Slf4j;

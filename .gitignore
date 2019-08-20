@@ -7,3 +7,5 @@ image/
 *.jpg
 target/
 *.iml
+*.gif
+*.png

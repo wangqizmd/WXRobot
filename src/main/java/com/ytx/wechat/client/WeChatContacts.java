@@ -1,14 +1,18 @@
 package com.ytx.wechat.client;
 
+import com.ytx.wechat.config.GlobalConfig;
+import com.ytx.wechat.entity.contact.WXContact;
 import com.ytx.wechat.entity.contact.WXGroup;
 import com.ytx.wechat.entity.contact.WXUser;
+import com.ytx.wechat.protocol.RspInit;
 import lombok.extern.slf4j.Slf4j;
-import me.xuxiaoxiao.chatapi.wechat.entity.contact.WXContact;
-import me.xuxiaoxiao.chatapi.wechat.entity.contact.WXGroup;
-import me.xuxiaoxiao.chatapi.wechat.entity.contact.WXUser;
-import me.xuxiaoxiao.chatapi.wechat.protocol.RspInit;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 模拟网页微信客户端联系人
@@ -20,6 +24,125 @@ final class WeChatContacts {
     private final HashMap<String, WXUser> friends = new HashMap<>();
     private final HashMap<String, WXGroup> groups = new HashMap<>();
     private WXUser me;
+
+    private static final String WHITELIST = GlobalConfig.getValue("friend.whitelist", "");
+
+    private static final String BLACKLIST = GlobalConfig.getValue("friend.blacklist", "");
+
+    private static final String GROUP_WHITELIST = GlobalConfig.getValue("group.whitelist", "");
+
+    private static final String GROUP_WHITE_KEYWORD = GlobalConfig.getValue("group.whiteKeyword", "");
+
+    private static final String GROUP_BLACKLIST = GlobalConfig.getValue("group.blacklist", "");
+
+    private static final String GROUP_BLACK_KEYWORD = GlobalConfig.getValue("group.blackKeyword", "");
+
+    private static final String GROUP_MODE_ONLY = GlobalConfig.getValue("group.modeOnly", "");
+
+    private static final String GROUP_MODE_KEYWORD = GlobalConfig.getValue("group.modeOnlyKeyword", "");
+
+    private static List<String> WHITE_LIST = new LinkedList<>();
+
+    private static List<String> BLACK_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_WHITE_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_WHITE_KEYWORD_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_MODE_KEYWORD_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_MODE_ONLY_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_BLACK_KEYWORD_LIST = new LinkedList<>();
+
+    private static List<String> GROUP_BLACK_LIST = new LinkedList<>();
+
+    static {
+
+        WHITE_LIST.addAll(Arrays.stream(WHITELIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        BLACK_LIST.addAll(Arrays.stream(BLACKLIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_WHITE_LIST.addAll(Arrays.stream(GROUP_WHITELIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_WHITE_KEYWORD_LIST.addAll(Arrays.stream(GROUP_WHITE_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_BLACK_KEYWORD_LIST.addAll(Arrays.stream(GROUP_BLACK_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_BLACK_LIST.addAll(Arrays.stream(GROUP_BLACKLIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_MODE_ONLY_LIST.addAll(Arrays.stream(GROUP_MODE_ONLY.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+
+        GROUP_MODE_KEYWORD_LIST.addAll(Arrays.stream(GROUP_MODE_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+    }
+
+
+    private static void setGroupPermission(WXGroup group) {
+        if(StringUtils.isEmpty(group.name)){
+            return;
+        }
+        for(String mode:GROUP_MODE_KEYWORD_LIST){
+            if(group.name.contains(mode)){
+                group.permission = 1;
+                break;
+            }
+        }
+        if(group.permission != 1 ){
+            for(String mode:GROUP_MODE_ONLY_LIST){
+                if(group.name.equals(mode)){
+                    group.permission = 1;
+                    break;
+                }
+            }
+        }
+        for(String mode:GROUP_WHITE_KEYWORD_LIST){
+            if(group.name.contains(mode)){
+                group.permission = 2;
+                break;
+            }
+        }
+        if(group.permission != 2 ){
+            for(String mode:GROUP_WHITE_LIST){
+                if(group.name.equals(mode)){
+                    group.permission = 2;
+                    break;
+                }
+            }
+        }
+        for(String mode:GROUP_BLACK_KEYWORD_LIST){
+            if(group.name.contains(mode)){
+                group.permission = 3;
+                break;
+            }
+        }
+        if(group.permission != 3 ){
+            for(String mode:GROUP_BLACK_LIST){
+                if(group.name.equals(mode)){
+                    group.permission = 3;
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void setUserPermission(WXUser user) {
+        if(StringUtils.isEmpty(user.name)){
+            return;
+        }
+        for(String mode:WHITE_LIST){
+            if(user.name.equals(mode)){
+                user.permission = 2;
+                break;
+            }
+        }
+        for(String mode:BLACK_LIST){
+            if(user.name.equals(mode)){
+                user.permission = 3;
+                break;
+            }
+        }
+
+    }
 
     private static <T extends WXContact> T parseContact(String host, RspInit.User contact) {
         if (contact.UserName.startsWith("@@")) {
@@ -42,6 +165,7 @@ final class WeChatContacts {
                     group.members.put(member.id, member);
                 }
             }
+            WeChatContacts.setGroupPermission(group);
             return (T) group;
         } else {
             WXUser user = new WXUser();
@@ -59,6 +183,7 @@ final class WeChatContacts {
             user.province = contact.Province;
             user.city = contact.City;
             user.verifyFlag = contact.VerifyFlag;
+            WeChatContacts.setUserPermission(user);
             return (T) user;
         }
     }

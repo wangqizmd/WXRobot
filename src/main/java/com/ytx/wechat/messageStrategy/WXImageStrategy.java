@@ -1,11 +1,11 @@
 package com.ytx.wechat.messageStrategy;
 
 import com.ytx.wechat.client.WeChatClient;
+import com.ytx.wechat.entity.contact.WXGroup;
+import com.ytx.wechat.entity.message.WXImage;
 import com.ytx.wechat.utils.GroupMsgUtil;
 import lombok.extern.slf4j.Slf4j;
-import me.xuxiaoxiao.chatapi.wechat.entity.contact.WXGroup;
-import me.xuxiaoxiao.chatapi.wechat.entity.message.WXImage;
-import me.xuxiaoxiao.chatapi.wechat.entity.message.WXMessage;
+import com.ytx.wechat.entity.message.WXMessage;
 
 @Slf4j
 public class WXImageStrategy implements MessageStrategy {

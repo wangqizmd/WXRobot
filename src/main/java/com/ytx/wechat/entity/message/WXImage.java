@@ -1,11 +1,14 @@
 package com.ytx.wechat.entity.message;
 
+import lombok.Data;
+
 import java.io.File;
 import java.io.Serializable;
 
 /**
  * 微信静态或动态图片消息
  */
+@Data
 public class WXImage extends WXMessage implements Serializable, Cloneable {
     /**
      * 图片宽度
@@ -24,44 +27,4 @@ public class WXImage extends WXMessage implements Serializable, Cloneable {
      */
     public File origin;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-
-        WXImage wxImage = (WXImage) o;
-
-        if (imgWidth != wxImage.imgWidth) {
-            return false;
-        }
-        if (imgHeight != wxImage.imgHeight) {
-            return false;
-        }
-        if (image != null ? !image.equals(wxImage.image) : wxImage.image != null) {
-            return false;
-        }
-        return origin != null ? origin.equals(wxImage.origin) : wxImage.origin == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + imgWidth;
-        result = 31 * result + imgHeight;
-        result = 31 * result + (image != null ? image.hashCode() : 0);
-        result = 31 * result + (origin != null ? origin.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public WXImage clone() {
-        return (WXImage) super.clone();
-    }
 }

@@ -126,17 +126,18 @@ final class WeChatContacts {
     }
 
     private static void setUserPermission(WXUser user) {
-        if(StringUtils.isEmpty(user.name)){
+        if(StringUtils.isEmpty(user.name)&&StringUtils.isEmpty(user.remark)){
             return;
         }
+        String name = StringUtils.isEmpty(user.remark) ? user.name : user.remark;
         for(String mode:WHITE_LIST){
-            if(user.name.equals(mode)){
+            if(name.equals(mode)){
                 user.permission = 2;
                 break;
             }
         }
         for(String mode:BLACK_LIST){
-            if(user.name.equals(mode)){
+            if(name.equals(mode)){
                 user.permission = 3;
                 break;
             }

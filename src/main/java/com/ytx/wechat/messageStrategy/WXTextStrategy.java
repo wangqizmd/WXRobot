@@ -26,8 +26,8 @@ public class WXTextStrategy implements MessageStrategy {
             if(message.fromGroup.permission==2){
                 String result = WeatherApi.dealWeatherMsg(message);
                 if(StringUtils.isNotEmpty(result)){
-                    String  atPrefix = "@" + message.fromGroup.members.get(message.fromUser.id) + WeChatClientListener.AT_ME_SPACE;
-                    client.sendText(message.fromUser, atPrefix + " " + result);
+                    String  atPrefix = "@" + message.fromGroup.members.get(message.fromUser.id).name + WeChatClientListener.AT_ME_SPACE;
+                    client.sendText(message.fromGroup, atPrefix + " " + result);
                 }
             }
         } else {

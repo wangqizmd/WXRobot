@@ -305,7 +305,7 @@ public final class WeChatClient {
      */
     @Nonnull
     public WXText sendText(@Nonnull WXContact wxContact, @Nonnull String text) {
-        log.info( "向{}发送消息：{}", wxContact.id, text);
+//        log.info( "向{}发送消息：{}", wxContact.id, text);
         RspSendMsg rspSendMsg = wxAPI.webwxsendmsg(new ReqSendMsg.Msg(RspSync.AddMsg.TYPE_TEXT, null, 0, text, null, wxContacts.getMe().id, wxContact.id));
 
         WXText wxText = new WXText();

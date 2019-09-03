@@ -75,7 +75,6 @@ public class WeatherApi {
         if (StringUtils.isBlank(response)) {
             response = "抱歉，未查询到\"" + keyword + "\"。" + "只支持查询国内(部分)市/区/县天气。\n";
         }
-        log.info("WeatherApi::getWeatherByKeyword, keyword:{}, cityName:{},response:{}", keyword, cityName, response);
         return response;
     }
 

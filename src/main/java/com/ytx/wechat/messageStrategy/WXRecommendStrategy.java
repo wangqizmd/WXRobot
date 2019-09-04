@@ -9,6 +9,6 @@ import com.ytx.wechat.entity.message.WXMessage;
 public class WXRecommendStrategy implements MessageStrategy {
     @Override
     public void handleMessage(WeChatClient weChatClient, WXMessage message) {
-        log.info("收到名片消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
+//        log.info("收到名片消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
     }
 }

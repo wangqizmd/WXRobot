@@ -9,6 +9,6 @@ import com.ytx.wechat.entity.message.WXMessage;
 public class WXMoneyStrategy implements MessageStrategy {
     @Override
     public void handleMessage(WeChatClient client, WXMessage message) {
-        log.info("收到转账消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
+//        log.info("收到转账消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
     }
 }

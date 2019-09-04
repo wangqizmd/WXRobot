@@ -9,6 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 public class WXFileStrategy implements MessageStrategy {
     @Override
     public void handleMessage(WeChatClient client, WXMessage message) {
-        log.info("收到文件消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
+//        log.info("收到文件消息。来自：{}，内容: {}", JSONObject.toJSONString(message));
     }
 }

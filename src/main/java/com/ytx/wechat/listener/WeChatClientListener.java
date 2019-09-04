@@ -43,6 +43,7 @@ public class WeChatClientListener extends WeChatClient.WeChatListener {
         strategyMap.put(WXVoice.class.getName(),new WXVoiceStrategy());
     }
 
+    @Override
     public void onQRCode(@Nonnull WeChatClient weChatClient, @Nonnull String qrCode) {
 //        log.info("onQRCode：{}", qrCode);
     }

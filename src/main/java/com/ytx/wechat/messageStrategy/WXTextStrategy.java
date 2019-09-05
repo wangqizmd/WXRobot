@@ -2,6 +2,7 @@ package com.ytx.wechat.messageStrategy;
 
 import com.ytx.wechat.api.weather.WeatherApi;
 import com.ytx.wechat.client.WeChatClient;
+import com.ytx.wechat.entity.contact.WXUser;
 import com.ytx.wechat.listener.WeChatClientListener;
 import com.ytx.wechat.utils.GroupMsgUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +24,10 @@ public class WXTextStrategy implements MessageStrategy {
         if (message.fromGroup != null) {
             String name = GroupMsgUtil.getUserDisplayOrName(message);
             log.info("收到群消息。来自群: {}，发送人：{}，内容: {}", message.fromGroup.name, name,message.content);
-            if(message.fromGroup.permission==2){
+            if(message.fromGroup.permission== 2 ){
                 String result = WeatherApi.dealWeatherMsg(message);
                 if(StringUtils.isNotEmpty(result)){
-                    String  atPrefix = "@" + message.fromGroup.members.get(message.fromUser.id).name + WeChatClientListener.AT_ME_SPACE;
+                    String  atPrefix = "@" + name + WeChatClientListener.AT_ME_SPACE;
                     client.sendText(message.fromGroup, atPrefix + " " + result);
                 }
             }
@@ -35,7 +36,8 @@ public class WXTextStrategy implements MessageStrategy {
                 log.info("自己向群\"{}\"发送消息，内容: {}", message.toContact.name,message.content);
                 setPermission(message);
             }else if(message.fromUser.id.equals(client.userMe().id)){
-                log.info("自己向\"{}\"发送消息，内容: {}", message.toContact.name,message.content);
+                String name = StringUtils.isEmpty(((WXUser)message.toContact).remark) ? message.toContact.name : ((WXUser)message.toContact).remark;
+                log.info("自己向\"{}\"发送消息，内容: {}", name,message.content);
                 setPermission(message);
             }else{
                 String name = StringUtils.isEmpty(message.fromUser.remark) ? message.fromUser.name : message.fromUser.remark;

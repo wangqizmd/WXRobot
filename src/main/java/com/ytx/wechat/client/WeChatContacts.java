@@ -258,6 +258,14 @@ final class WeChatContacts {
 
     void putContact(String host, RspInit.User userContact) {
         WXContact contact = WeChatContacts.parseContact(host, userContact);
+        //更新权限，如果是在微信里面设置的权限，在这顺延下去
+        WXContact oldContact = this.contacts.get(contact.id);
+        if(oldContact!=null ){
+            if(oldContact.getPermission() != 0){
+                contact.setPermission(oldContact.getPermission());
+            }
+            rmvContact(contact.id);
+        }
         this.contacts.put(contact.id, contact);
         if (contact instanceof WXGroup) {
             WXGroup group = (WXGroup) contact;

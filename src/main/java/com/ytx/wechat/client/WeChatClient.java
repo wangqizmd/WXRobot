@@ -859,7 +859,6 @@ public final class WeChatClient {
                             for (RspInit.User user : rspSync.ModContactList) {
                                 //由于在这里获取到的联系人（无论是群还是用户）的信息是不全的，所以使用接口重新获取
                                 WXContact oldContact = wxContacts.getContact(user.UserName);
-                                wxContacts.rmvContact(user.UserName);
                                 if (oldContact != null && StringUtils.isEmpty(oldContact.name)) {
                                     oldContact = null;
                                 }

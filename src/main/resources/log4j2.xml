@@ -12,7 +12,7 @@
         </RollingFile>
     </appenders>
     <loggers>
-        <root level="all">
+        <root level="info">
             <appender-ref ref="RollingFile" />
             <appender-ref ref="Console" />
         </root>

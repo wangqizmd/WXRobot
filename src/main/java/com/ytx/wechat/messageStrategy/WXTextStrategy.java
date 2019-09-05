@@ -1,5 +1,6 @@
 package com.ytx.wechat.messageStrategy;
 
+import com.ytx.wechat.api.chat.ChatApi;
 import com.ytx.wechat.api.weather.WeatherApi;
 import com.ytx.wechat.client.WeChatClient;
 import com.ytx.wechat.entity.contact.WXUser;
@@ -24,12 +25,9 @@ public class WXTextStrategy implements MessageStrategy {
         if (message.fromGroup != null) {
             String name = GroupMsgUtil.getUserDisplayOrName(message);
             log.info("收到群消息。来自群: {}，发送人：{}，内容: {}", message.fromGroup.name, name,message.content);
-            if(message.fromGroup.permission== 2 ){
-                String result = WeatherApi.dealWeatherMsg(message);
-                if(StringUtils.isNotEmpty(result)){
-                    String  atPrefix = "@" + name + WeChatClientListener.AT_ME_SPACE;
-                    client.sendText(message.fromGroup, atPrefix + " " + result);
-                }
+            String result = dealContent(message,message.fromGroup.permission);
+            if(StringUtils.isNotEmpty(result)){
+                client.sendText(message.fromGroup, result);
             }
         } else {
             if(message.toContact instanceof WXGroup){
@@ -42,25 +40,46 @@ public class WXTextStrategy implements MessageStrategy {
             }else{
                 String name = StringUtils.isEmpty(message.fromUser.remark) ? message.fromUser.name : message.fromUser.remark;
                 log.info("收到消息。来自：{}，内容: {}", name,message.content);
-                if(message.fromUser.permission==2){
-                    String result = WeatherApi.dealWeatherMsg(message);
-                    if(StringUtils.isNotEmpty(result)){
-                        client.sendText(message.fromUser, result);
-                    }
+                String result = dealContent(message,message.fromUser.permission);
+                if(StringUtils.isNotEmpty(result)){
+                    client.sendText(message.fromUser, result);
                 }
             }
         }
     }
 
+    private String dealContent(WXMessage message,int permission){
+        if(permission > 1 ){
+            //进行指令处理
+            String result = dealModel(message);
+            if(StringUtils.isNotEmpty(result)){
+                return result;
+            }
+            if( permission > 2){
+                //进行闲聊模式
+                return ChatApi.dealMsg(message.content);
+            }
+        }
+        return null;
+    }
+
+    private String dealModel(WXMessage message){
+        String result = WeatherApi.dealWeatherMsg(message);
+        if(StringUtils.isNotEmpty(result)){
+            return result;
+        }
+        //todo 后续指令
+        return null;
+    }
     private void setPermission(WXMessage message) {
-        if(message.content.contains("白名单")){
-            message.toContact.permission=2;
-        }else if(message.content.contains("黑名单")){
-            message.toContact.permission=3;
-        }else if(message.content.contains("指令模式")){
-            message.toContact.permission=1;
-        }else if(message.content.contains("默认")){
+        if(message.content.contains("默认")){
             message.toContact.permission=0;
+        }else if(message.content.contains("黑名单")){
+            message.toContact.permission=1;
+        }else if(message.content.contains("指令模式")){
+            message.toContact.permission=2;
+        }else if(message.content.contains("白名单")){
+            message.toContact.permission=3;
         }
     }
 }

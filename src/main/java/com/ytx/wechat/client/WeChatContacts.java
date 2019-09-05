@@ -83,42 +83,42 @@ final class WeChatContacts {
         }
         for(String mode:GROUP_MODE_KEYWORD_LIST){
             if(group.name.contains(mode)){
-                group.permission = 1;
-                break;
-            }
-        }
-        if(group.permission != 1 ){
-            for(String mode:GROUP_MODE_ONLY_LIST){
-                if(group.name.equals(mode)){
-                    group.permission = 1;
-                    break;
-                }
-            }
-        }
-        for(String mode:GROUP_WHITE_KEYWORD_LIST){
-            if(group.name.contains(mode)){
                 group.permission = 2;
                 break;
             }
         }
         if(group.permission != 2 ){
-            for(String mode:GROUP_WHITE_LIST){
+            for(String mode:GROUP_MODE_ONLY_LIST){
                 if(group.name.equals(mode)){
                     group.permission = 2;
                     break;
                 }
             }
         }
-        for(String mode:GROUP_BLACK_KEYWORD_LIST){
+        for(String mode:GROUP_WHITE_KEYWORD_LIST){
             if(group.name.contains(mode)){
                 group.permission = 3;
                 break;
             }
         }
         if(group.permission != 3 ){
-            for(String mode:GROUP_BLACK_LIST){
+            for(String mode:GROUP_WHITE_LIST){
                 if(group.name.equals(mode)){
                     group.permission = 3;
+                    break;
+                }
+            }
+        }
+        for(String mode:GROUP_BLACK_KEYWORD_LIST){
+            if(group.name.contains(mode)){
+                group.permission = 1;
+                break;
+            }
+        }
+        if(group.permission != 1 ){
+            for(String mode:GROUP_BLACK_LIST){
+                if(group.name.equals(mode)){
+                    group.permission = 1;
                     break;
                 }
             }
@@ -132,13 +132,13 @@ final class WeChatContacts {
         String name = StringUtils.isEmpty(user.remark) ? user.name : user.remark;
         for(String mode:WHITE_LIST){
             if(name.equals(mode)){
-                user.permission = 2;
+                user.permission = 3;
                 break;
             }
         }
         for(String mode:BLACK_LIST){
             if(name.equals(mode)){
-                user.permission = 3;
+                user.permission = 1;
                 break;
             }
         }

@@ -5,6 +5,7 @@ import com.ytx.wechat.entity.contact.WXContact;
 import com.ytx.wechat.entity.contact.WXGroup;
 import com.ytx.wechat.entity.message.*;
 import com.ytx.wechat.messageStrategy.*;
+import com.ytx.wechat.utils.HTMLSpirit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -114,8 +115,8 @@ public class WeChatClientListener extends WeChatClient.WeChatListener {
                 }
                 for (WXGroup.Member member: list) {
                     log.info("群{}新增联系人{}", newContact.name,member.name);
-                    String  atPrefix = "@" + member.name + AT_ME_SPACE;
-                    if(newContact.permission==2){
+                    String  atPrefix = "@" + HTMLSpirit.delHTMLTag(member.name) + AT_ME_SPACE;
+                    if(newContact.permission > 1){
                         client.sendText(newContact, atPrefix + "\n欢迎加入群\""+newContact.name+"\",我是本群的微信智能机器人，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
                     }
                 }
@@ -126,15 +127,15 @@ public class WeChatClientListener extends WeChatClient.WeChatListener {
                 }
                 for (WXGroup.Member member: list) {
                     log.info("群{}删除联系人{}", newContact.name, member.name);
-                    if (newContact.permission == 2) {
-                        client.sendText(newContact, "我是微信智能机器人，很遗憾的通知各位，成员" + (StringUtils.isNotEmpty(member.display) ? member.display : member.name) + "刚才离开了群\"" + newContact.name + "\",大家记得跟他常联系哦！！");
+                    if (newContact.permission > 1) {
+                        client.sendText(newContact, "我是微信智能机器人，很遗憾的通知各位，成员" + HTMLSpirit.delHTMLTag((StringUtils.isNotEmpty(member.display) ? member.display : member.name)) + "刚才离开了群\"" + newContact.name + "\",大家记得跟他常联系哦！！");
                     }
                 }
             }
         }else if(oldContact == null && newContact != null){
             if(newContact instanceof WXGroup){
                 log.info("加入群: {}",  newContact.name);
-                if(newContact.permission==2) {
+                if(newContact.permission > 1) {
                     client.sendText(newContact, "谢谢群主大大和各位小可爱，我是你们的微信智能机器人，欢迎跟我玩耍哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
                 }
             }else {

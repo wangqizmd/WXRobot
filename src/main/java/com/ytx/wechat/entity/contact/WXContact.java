@@ -52,7 +52,7 @@ public abstract class WXContact implements Serializable, Cloneable {
     public int contactFlag;
 
     /**
-     * 权限,0-默认权限，1-指令模式，2-白名单，3-黑名单
+     * 权限,0-默认权限，1-黑名单，2-指令模式，3-白名单，
      */
     public int permission;
 

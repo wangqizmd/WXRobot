@@ -676,9 +676,7 @@ public final class WeChatClient {
 
         @Override
         public void run() {
-            int loginCount = 0;
             while (!isInterrupted()) {
-
                 //用户登录
                 log.info("正在登录");
                 String loginErr = login();
@@ -704,15 +702,11 @@ public final class WeChatClient {
                     log.info("开始监听信息");
                     String listenErr = listen();
                     if (StringUtils.isNotEmpty(listenErr)) {
-                        if (loginCount++ > 10) {
-                            handleFailure(listenErr);
-                            //退出登录
-                            log.info("正在退出登录");
-                            handleLogout();
-                            return;
-                        } else {
-                            continue;
-                        }
+                        handleFailure(listenErr);
+                        //退出登录
+                        log.info("正在退出登录");
+                        handleLogout();
+                        return;
                     }
                 }
             }

@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static com.ytx.wechat.utils.MD5.md5;
+
 /**
  * @author wangqi
  * @version 1.0
@@ -68,20 +70,6 @@ public class ChatApi {
         return null;
     }
 
-    public static void main(String[] args) throws IOException {
-        System.out.println(dealMsg("你是谁？<h1><a id=\"Header1_HeaderTitle\" class=\"headermaintitle HeaderMainTitle\" href=\"https://www.cnblogs.com/henuyuxiang/\">Henu丶雨巷</a>\n" +
-                "</h1>\n" +
-                "<h2>\n" +
-                "<br>人生就像一段美妙的旅途  谁知道最好的风景在何处\n" +
-                "</h2>"));
-//        HttpResponse response =
-//                HttpRequest.post("https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat").form(params)
-//                        .send();
-//        String resp1 = response.bodyText();
-
-    }
-
-
     public static String getSignature(Map<String, Object> params) throws IOException {
         Map<String, Object> sortedParams = new TreeMap<>(params);
         Set<Map.Entry<String, Object>> entrys = sortedParams.entrySet();
@@ -95,7 +83,7 @@ public class ChatApi {
         }
         if (baseString.length() > 0) {
             baseString.deleteCharAt(baseString.length() - 1).append("&app_key=")
-                    .append("IQszD18ZUp9fYMJo");
+                    .append(APP_KEY);
         }
         try {
             String sign = md5(baseString.toString());
@@ -105,31 +93,4 @@ public class ChatApi {
         }
     }
 
-    public static String md5(String s){
-        // 获取信息摘要 - 参数字典排序后字符串
-        try {
-            // 指定sha1算法
-            MessageDigest digest = MessageDigest.getInstance("MD5");//sun.security.provider.SHA@74c6fd6e //sun.security.provider.MD2@4e2c390c
-            digest.update(s.getBytes("UTF-8"));
-            // 获取字节数组
-            byte messageDigest[] = digest.digest();
-            // Create Hex String
-            StringBuffer hexString = new StringBuffer();
-            // 字节数组转换为 十六进制 数
-            for (int i = 0; i < messageDigest.length; i++) {
-                String shaHex = Integer.toHexString(messageDigest[i] & 0xFF);
-                if (shaHex.length() < 2) {
-                    hexString.append(0);
-                }
-                hexString.append(shaHex);
-            }
-            return hexString.toString().toUpperCase();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return null;
-
-    }
 }

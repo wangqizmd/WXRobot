@@ -1,7 +1,4 @@
-import com.ytx.wechat.api.weather.WeatherApi;
 import com.ytx.wechat.client.WeChatClient;
-import com.ytx.wechat.entity.message.WXMessage;
-import com.ytx.wechat.entity.message.WXText;
 import com.ytx.wechat.listener.WeChatClientListener;
 import lombok.extern.slf4j.Slf4j;
 

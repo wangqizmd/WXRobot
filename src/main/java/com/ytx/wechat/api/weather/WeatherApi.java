@@ -93,7 +93,6 @@ public class WeatherApi {
         }catch (Exception e){
             log.error("查询{}天气失败：{}",cityName,e.getMessage());
         }
-
         return result;
     }
 

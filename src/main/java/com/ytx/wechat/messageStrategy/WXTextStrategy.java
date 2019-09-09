@@ -1,6 +1,7 @@
 package com.ytx.wechat.messageStrategy;
 
 import com.ytx.wechat.api.chat.ChatApi;
+import com.ytx.wechat.api.constellation.ConstellationApi;
 import com.ytx.wechat.api.weather.WeatherApi;
 import com.ytx.wechat.client.WeChatClient;
 import com.ytx.wechat.entity.contact.WXUser;
@@ -65,6 +66,10 @@ public class WXTextStrategy implements MessageStrategy {
 
     private String dealModel(WXMessage message){
         String result = WeatherApi.dealWeatherMsg(message);
+        if(StringUtils.isNotEmpty(result)){
+            return result;
+        }
+        result = ConstellationApi.dealConstellationMsg(message);
         if(StringUtils.isNotEmpty(result)){
             return result;
         }

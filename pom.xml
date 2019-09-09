@@ -7,8 +7,8 @@
     <groupId>com.ytx</groupId>
     <artifactId>WXRobot</artifactId>
     <version>1.0-SNAPSHOT</version>
-
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- jar包版本设置 -->
         <slf4j.version>1.7.21</slf4j.version>
         <log4j.version>2.11.0</log4j.version>
@@ -82,6 +82,17 @@
                 <configuration>
                     <source>8</source>
                     <target>8</target>
+                    <compilerArgs>
+                        <!-- 过期的方法的警告-->
+                        <arg>-Xlint:deprecation</arg>
+                    </compilerArgs>
+                    <compilerArguments>
+                        <!-- 是否输出所有的编译信息（包括类的加载等）-->
+                        <!--<verbose />-->
+                        <!-- 解决maven命令编译报错，因为rt.jar 和jce.jar在jre的lib下面，不在jdk的lib下面，
+                        导致maven找不到（java7以后会出现这个问题），将这2个jar包拷贝到jdk的lib下面估计也好使-->
+                        <bootclasspath>${java.home}\lib\rt.jar;${java.home}\lib\jce.jar</bootclasspath>
+                    </compilerArguments>
                 </configuration>
             </plugin>
         </plugins>

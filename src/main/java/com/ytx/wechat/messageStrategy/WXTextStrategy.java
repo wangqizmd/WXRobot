@@ -33,11 +33,11 @@ public class WXTextStrategy implements MessageStrategy {
         } else {
             if(message.toContact instanceof WXGroup){
                 log.info("自己向群\"{}\"发送消息，内容: {}", message.toContact.name,message.content);
-                setPermission(message);
+                setPermission(message,client);
             }else if(message.fromUser.id.equals(client.userMe().id)){
                 String name = StringUtils.isEmpty(((WXUser)message.toContact).remark) ? message.toContact.name : ((WXUser)message.toContact).remark;
                 log.info("自己向\"{}\"发送消息，内容: {}", name,message.content);
-                setPermission(message);
+                setPermission(message,client);
             }else{
                 String name = StringUtils.isEmpty(message.fromUser.remark) ? message.fromUser.name : message.fromUser.remark;
                 log.info("收到消息。来自：{}，内容: {}", name,message.content);
@@ -76,15 +76,21 @@ public class WXTextStrategy implements MessageStrategy {
         //todo 后续指令
         return null;
     }
-    private void setPermission(WXMessage message) {
+    private void setPermission(WXMessage message,WeChatClient client) {
+        boolean flag = false;
         if(message.content.contains("默认")){
             message.toContact.permission=0;
-        }else if(message.content.contains("黑名单")){
-            message.toContact.permission=1;
         }else if(message.content.contains("指令模式")){
             message.toContact.permission=2;
+            flag = true;
         }else if(message.content.contains("白名单")){
             message.toContact.permission=3;
+            flag = true;
+        }else if(message.content.contains("黑名单")){
+            message.toContact.permission=1;
+        }
+        if(flag){
+            client.sendText(message.toContact, "[玫瑰][玫瑰][玫瑰][玫瑰]您的的微信智能助手已上线，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
         }
     }
 }

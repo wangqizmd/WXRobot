@@ -3,6 +3,7 @@ package com.ytx.wechat.listener;
 import com.ytx.wechat.client.WeChatClient;
 import com.ytx.wechat.entity.contact.WXContact;
 import com.ytx.wechat.entity.contact.WXGroup;
+import com.ytx.wechat.entity.contact.WXUser;
 import com.ytx.wechat.entity.message.*;
 import com.ytx.wechat.messageStrategy.*;
 import com.ytx.wechat.utils.HTMLSpirit;
@@ -74,6 +75,22 @@ public class WeChatClientListener extends WeChatClient.WeChatListener {
     @Override
     public void onLogin(@Nonnull WeChatClient client) {
         log.info("登陆成功：您有{}名好友、活跃微信群{}个", client.userFriends().size(), client.userGroups().size());
+        HashMap<String, WXGroup> group = client.userGroups();
+        if(!group.isEmpty()){
+            for (WXGroup wxGroup: group.values()) {
+                if(wxGroup.permission > 1){
+                    client.sendText(wxGroup, "[玫瑰][玫瑰][玫瑰][玫瑰]大家好，本群的微信智能助手已上线，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
+                }
+            }
+        }
+        HashMap<String, WXUser> user = client.userFriends();
+        if(!user.isEmpty()){
+            for (WXUser wxUser: user.values()) {
+                if(wxUser.permission > 1){
+                    client.sendText(wxUser, "[玫瑰][玫瑰][玫瑰][玫瑰]您好，您的微信智能助手已上线，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
+                }
+            }
+        }
     }
 
     /**

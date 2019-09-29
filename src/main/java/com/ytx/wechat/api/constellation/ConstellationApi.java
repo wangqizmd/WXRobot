@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class ConstellationApi {
 
-    private static final String constellationApi = GlobalConfig.getValue("constellationApi", "");
+    private static final String CONSTELLATION_API = GlobalConfig.getValue("constellationApi", "");
 
     private static final String constellationKey = GlobalConfig.getValue("constellationKey", "");
 
@@ -44,11 +44,11 @@ public class ConstellationApi {
             return null;
         }
         if (constellationList.contains(keyword)) {
-            if (StringUtils.isBlank(constellationApi)||StringUtils.isBlank(constellationKey)||StringUtils.isBlank(constellationType)) {
+            if (StringUtils.isBlank(CONSTELLATION_API)||StringUtils.isBlank(constellationKey)||StringUtils.isBlank(constellationType)) {
                 return "抱歉，星座运势功能暂未开启，请联系管理员开启\n";
             }
             try{
-                XRequest request = XRequest.GET(constellationApi + keyword + "&key=" + constellationKey + "&type=" + constellationType);
+                XRequest request = XRequest.GET(CONSTELLATION_API + keyword + "&key=" + constellationKey + "&type=" + constellationType);
                 Constellation constellation = JSON.parseObject(JSONObject.parseObject(XTools.http(request).string()).get("result1").toString(), Constellation.class);
                 return constellation.toString();
             }catch (Exception e){

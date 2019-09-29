@@ -24,7 +24,7 @@ import static com.ytx.wechat.utils.MD5.md5;
  * @author wangqi
  * @version 1.0
  * @className ChatApi
- * @description TODO
+ * @description 聊天接口
  * @date 2019/9/5 17:21
  */
 @Slf4j

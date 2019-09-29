@@ -1,20 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="error">
-    <appenders>
-        <Console name="Console" target="SYSTEM_OUT" >
-            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY" />
-            <PatternLayout pattern="%d{yyyy.MM.dd 'at' HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n" />
+<!--根节点Configuration有两个属性:status和monitorinterval,有两个子节点:Appenders和Loggers(表明可以定义多个Appender和Logger).-->
+<!--status用来指定log4j本身的打印日志的级别.-->
+<!--monitorinterval用于指定log4j自动重新配置的监测间隔时间，单位是s,最小是5s.-->
+<configuration status="error" monitorInterval = "120">
 
+    <Properties>
+        <!-- （各应用需要修改）日志文件本地存放目录路径 建议各个环境跟生产环境统一起来,方便维护 -->
+        <!--<property name="logBaseFolder">/var/opt/logs</property>-->
+        <property name="LOG_PATH">./log</property>
+    </Properties>
+
+    <!--     先定义所有的appender -->
+    <appenders>
+        <!--         这个输出控制台的配置 -->
+        <!--name:指定Appender的名字.-->
+        <!--target:SYSTEM_OUT 或 SYSTEM_ERR,一般只设置默认:SYSTEM_OUT.-->
+        <!--PatternLayout:输出格式，不设置默认为:%m%n.-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <!--onMatch="ACCEPT" 表示匹配该级别及以上-->
+            <!--onMatch="DENY" 表示不匹配该级别及以上-->
+            <!--onMatch="NEUTRAL" 表示该级别及以上的，由下一个filter处理，如果当前是最后一个，则表示匹配该级别及以上-->
+            <!--onMismatch="ACCEPT" 表示匹配该级别以下-->
+            <!--onMismatch="NEUTRAL" 表示该级别及以下的，由下一个filter处理，如果当前是最后一个，则不匹配该级别以下的-->
+            <!--onMismatch="DENY" 表示不匹配该级别以下的-->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--这个是输出日志的格式 -->
+            <PatternLayout pattern="[%d{HH:mm:ss.SSS}] [%-5p] - %l - %m%n"/>
         </Console>
-        <RollingFile name="RollingFile" fileName="./logs/info.log" filePattern="./logs/$${date:yyyy-MM}/payPlatform-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="%d{yyyy.MM.dd 'at' HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n" />
-            <SizeBasedTriggeringPolicy size="100 M" />
+
+        <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，这个也挺有用的，适合临时测试用 -->
+        <!-- append为TRUE表示消息增加到指定文件中，false表示消息覆盖指定的文件内容，默认值是true -->
+        <!--<File name="FileInfo" fileName="${LOG_PATH}/info1.log" append="false">-->
+            <!--<PatternLayout pattern="[%d{HH:mm:ss.SSS}] [%-5p] - %l - %m%n"/>-->
+        <!--</File>-->
+
+        <!-- 添加过滤器ThresholdFilter,可以有选择的输出某个级别以上的类别  onMatch="ACCEPT" onMismatch="DENY"意思是匹配就接受,否则直接拒绝  -->
+        <!--<File name="FileError" fileName="${LOG_PATH}/error1.log">-->
+            <!--<ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>-->
+            <!--<PatternLayout pattern="[%d{yyyy.MM.dd HH:mm:ss}] [%-5p] - %l - %m%n"/>-->
+        <!--</File>-->
+
+        <!--这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
+        <RollingFile name="RollingFileInfo" fileName="${LOG_PATH}/info.log"
+                     filePattern="${LOG_PATH}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy.MM.dd HH:mm:ss}] [%-5p] - %l - %m%n"/>
+            <!-- 添加过滤器组-->
+            <Filters>
+                <!--如果是error级别拒绝-->
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL" />
+                <!--如果是debug\info\warn输出-->
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!--指定滚动日志的策略-->
+            <Policies>
+                <!-- 所以时间%d和整数%i同时用的意义就在于，当单个日志文件到达最大size的时候创建一个新的文件 -->
+                <!--基于时间的滚动策略，interval属性用来指定多久滚动一次，默认是1hour。-->
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <!--基于指定文件大小的滚动策略，size属性用来定义每个日志文件的大小.-->
+<!--                <SizeBasedTriggeringPolicy size="100 MB"/>-->
+            </Policies>
+            <!--用来指定同一个文件夹下最多有几个日志文件时开始删除最旧的，创建新的(通过max属性)。-->
+<!--            <DefaultRolloverStrategy max="30">-->
+<!--                <Delete basePath="${LOG_PATH}/info" maxDepth="2">-->
+<!--                    <IfFileName glob="*.log" />-->
+<!--                    &lt;!&ndash;删除30天前的文件&ndash;&gt;-->
+<!--                    <IfLastModified age="30d" />-->
+<!--                </Delete>-->
+<!--            </DefaultRolloverStrategy>-->
+        </RollingFile>
+
+        <!--这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
+        <RollingFile name="RollingFileError" fileName="${LOG_PATH}/error.log"
+                     filePattern="${LOG_PATH}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy.MM.dd HH:mm:ss}] [%-5p] - %l - %m%n"/>
+            <!-- 添加过滤器组-->
+            <Filters>
+                <!--如果是error级别-->
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <!--指定滚动日志的策略-->
+            <Policies>
+                <!-- 所以时间%d和整数%i同时用的意义就在于，当单个日志文件到达最大size的时候创建一个新的文件 -->
+                <!--基于时间的滚动策略，interval属性用来指定多久滚动一次，默认是1hour。-->
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <!--基于指定文件大小的滚动策略，size属性用来定义每个日志文件的大小.-->
+<!--                <SizeBasedTriggeringPolicy size="100 MB"/>-->
+            </Policies>
+            <!--用来指定同一个文件夹下最多有几个日志文件时开始删除最旧的，创建新的(通过max属性)。-->
+<!--            <DefaultRolloverStrategy max="30">-->
+<!--                <Delete basePath="${LOG_PATH}/info" maxDepth="2">-->
+<!--                    <IfFileName glob="*.log" />-->
+<!--                    &lt;!&ndash;删除30天前的文件&ndash;&gt;-->
+<!--                    <IfLastModified age="30d" />-->
+<!--                </Delete>-->
+<!--            </DefaultRolloverStrategy>-->
         </RollingFile>
     </appenders>
+
+    <!--     然后定义logger，只有定义了logger并引入的appender，appender才会生效 -->
     <loggers>
+        <!--<logger name="com.ytx" level="debug" />-->
+        <!--         建立一个默认的root的logger -->
         <root level="info">
-            <appender-ref ref="RollingFile" />
-            <appender-ref ref="Console" />
+            <appender-ref ref="Console"/>
+            <appender-ref ref="RollingFileInfo"/>
+            <appender-ref ref="RollingFileError" />
         </root>
     </loggers>
 </configuration>

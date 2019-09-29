@@ -678,36 +678,33 @@ public final class WeChatClient {
         public void run() {
             while (!isInterrupted()) {
                 //用户登录
-                log.info("正在登录");
+                log.debug("正在登录");
                 String loginErr = login();
                 if (StringUtils.isNotEmpty(loginErr)) {
                     handleFailure(loginErr);
                     //退出登录
-                    log.info("正在退出登录");
+                    log.debug("正在退出登录");
                     handleLogout();
-                    return;
+                    interrupt();
                 }else{
                     //用户初始化
-                    log.info("正在初始化");
+                    log.debug("正在初始化");
                     String initErr = initial();
                     if (StringUtils.isNotEmpty(initErr)) {
-//                    log.error("初始化出现错误：{}", initErr);
                         handleFailure(initErr);
-                        return;
+                        interrupt();
                     }
-
                     handleLogin();
-
                     //同步消息
-                    log.info("开始监听信息");
+                    log.debug("开始监听信息");
                     String listenErr = listen();
                     if (StringUtils.isNotEmpty(listenErr)) {
                         handleFailure(listenErr);
-                        //退出登录
-                        log.info("正在退出登录");
-                        handleLogout();
-                        return;
                     }
+                    //退出登录
+                    log.debug("正在退出登录");
+                    handleLogout();
+                    interrupt();
                 }
             }
         }
@@ -761,7 +758,7 @@ public final class WeChatClient {
         private String initial() {
             try {
                 //通过Cookie获取重要参数
-                log.info("正在获取Cookie");
+                log.debug("正在获取Cookie");
                 for (HttpCookie cookie : XHttpTools.EXECUTOR.getCookies()) {
                     if ("wxsid".equalsIgnoreCase(cookie.getName())) {
                         wxAPI.sid = cookie.getValue();
@@ -773,12 +770,12 @@ public final class WeChatClient {
                 }
 
                 //获取自身信息
-                log.info("正在获取自身信息");
+                log.debug("正在获取自身信息");
                 RspInit rspInit = wxAPI.webwxinit();
                 wxContacts.setMe(wxAPI.host, rspInit.User);
 
                 //获取并保存最近联系人
-                log.info("正在获取并保存最近联系人");
+                log.debug("正在获取并保存最近联系人");
                 loadContacts(rspInit.ChatSet, true);
 
                 //发送初始化状态信息
@@ -786,15 +783,14 @@ public final class WeChatClient {
 
                 //获取好友、保存的群聊、公众号列表。
                 //这里获取的群没有群成员，不过也不能用fetchContact方法暴力获取群成员，因为这样数据量会很大
-                log.info("正在获取好友、群、公众号列表");
+                log.debug("正在获取好友、群、公众号列表");
                 RspGetContact rspGetContact = wxAPI.webwxgetcontact();
                 for (RspInit.User user : rspGetContact.MemberList) {
                     wxContacts.putContact(wxAPI.host, user);
                 }
                 return null;
             } catch (Exception e) {
-                e.printStackTrace();
-                log.error("初始化异常:{}", e.getMessage());
+                log.error("初始化异常:{}", e);
                 return e.getMessage();
             }
         }
@@ -807,87 +803,82 @@ public final class WeChatClient {
         @Nullable
         private String listen() {
             int retryCount = 0;
-            try {
-                while (!isInterrupted()) {
-                    RspSyncCheck rspSyncCheck;
-                    try {
-                        rspSyncCheck = wxAPI.synccheck();
-                    } catch (Exception e) {
-                        if (retryCount++ < 5) {
-                           log.error("监听异常，重试第{}次,异常原因：{}", retryCount,e.getMessage());
-                            continue;
-                        } else {
-                            log.error("监听异常，重试次数过多,异常原因：{}",e.getMessage());
-                            return e.getMessage();
-                        }
+            while (!isInterrupted()) {
+                RspSyncCheck rspSyncCheck;
+                try {
+                    rspSyncCheck = wxAPI.synccheck();
+                } catch (Exception e) {
+                    if (retryCount++ < 5) {
+                       log.error("监听异常，重试第{}次,异常原因：{}", retryCount,e.getMessage());
+                        continue;
+                    } else {
+                        log.error("监听异常，重试次数过多,异常原因：{}",e.getMessage());
+                        return e.getMessage();
                     }
-                    retryCount = 0;
-                    if (rspSyncCheck.retcode > 0) {
-                        log.info("停止监听信息：{}", rspSyncCheck.retcode);
-                        return null;
-                    } else if (rspSyncCheck.selector > 0) {
-                        RspSync rspSync = wxAPI.webwxsync();
-                        if (rspSync.DelContactList != null && !rspSync.DelContactList.isEmpty()) {
-                            //删除好友立刻触发
-                            //删除群后的任意一条消息触发
-                            //被移出群不会触发（会收到一条被移出群的addMsg）
-                            for (RspInit.User user : rspSync.DelContactList) {
-                                WXContact oldContact = wxContacts.getContact(user.UserName);
-                                if(oldContact instanceof WXUser){
-                                    wxContacts.rmvContact(user.UserName);
-                                    if (oldContact != null && StringUtils.isNotEmpty(oldContact.name)) {
-                                        handleContact(oldContact, null);
-                                    }
-                                }else{
-                                    wxContacts.putContact(wxAPI.host, user);
-                                    WXContact newContact = wxContacts.getContact(user.UserName);
-                                    handleContact(oldContact, newContact);
+                }
+                retryCount = 0;
+                if (rspSyncCheck.retcode > 0) {
+                    log.info("停止监听信息：{}", rspSyncCheck.retcode);
+                    return null;
+                } else if (rspSyncCheck.selector > 0) {
+                    RspSync rspSync = wxAPI.webwxsync();
+                    if (rspSync.DelContactList != null && !rspSync.DelContactList.isEmpty()) {
+                        //删除好友立刻触发
+                        //删除群后的任意一条消息触发
+                        //被移出群不会触发（会收到一条被移出群的addMsg）
+                        for (RspInit.User user : rspSync.DelContactList) {
+                            WXContact oldContact = wxContacts.getContact(user.UserName);
+                            if(oldContact instanceof WXUser){
+                                wxContacts.rmvContact(user.UserName);
+                                if (oldContact != null && StringUtils.isNotEmpty(oldContact.name)) {
+                                    handleContact(oldContact, null);
                                 }
-                            }
-                        }
-                        if (rspSync.ModContactList != null && !rspSync.ModContactList.isEmpty()) {
-                            //添加好友立刻触发
-                            //被拉入已存在的群立刻触发
-                            //被拉入新群第一条消息触发（同时收到2条addMsg，一条被拉入群，一条聊天消息）
-                            //群里有人加入或群里踢人或修改群信息之后第一条信息触发
-                            for (RspInit.User user : rspSync.ModContactList) {
-                                //由于在这里获取到的联系人（无论是群还是用户）的信息是不全的，所以使用接口重新获取
-                                WXContact oldContact = wxContacts.getContact(user.UserName);
-                                if (oldContact != null && StringUtils.isEmpty(oldContact.name)) {
-                                    oldContact = null;
-                                }
+                            }else{
                                 wxContacts.putContact(wxAPI.host, user);
                                 WXContact newContact = wxContacts.getContact(user.UserName);
-                                if (newContact != null && StringUtils.isEmpty(newContact.name)) {
-                                    wxContacts.rmvContact(user.UserName);
-                                    newContact = null;
-                                }
                                 handleContact(oldContact, newContact);
                             }
                         }
-                        if (rspSync.AddMsgList != null && !rspSync.AddMsgList.isEmpty()) {
-                            for (RspSync.AddMsg addMsg : rspSync.AddMsgList) {
-                                //接收到的消息，文字、图片、语音、地理位置等等
-                                WXMessage wxMessage = parseMessage(addMsg);
-                                if (wxMessage instanceof WXNotify) {
-                                    //状态更新消息，需要处理后再交给监听器
-                                    WXNotify wxNotify = (WXNotify) wxMessage;
-                                    if (wxNotify.notifyCode == WXNotify.NOTIFY_SYNC_CONV) {
-                                        //会话同步，网页微信仅仅只获取了相关联系人详情
-                                        loadContacts(wxNotify.notifyContact, false);
-                                    }
-                                }
-                                //最后交给监听器处理
-                                handleMessage(wxMessage);
+                    }
+                    if (rspSync.ModContactList != null && !rspSync.ModContactList.isEmpty()) {
+                        //添加好友立刻触发
+                        //被拉入已存在的群立刻触发
+                        //被拉入新群第一条消息触发（同时收到2条addMsg，一条被拉入群，一条聊天消息）
+                        //群里有人加入或群里踢人或修改群信息之后第一条信息触发
+                        for (RspInit.User user : rspSync.ModContactList) {
+                            //由于在这里获取到的联系人（无论是群还是用户）的信息是不全的，所以使用接口重新获取
+                            WXContact oldContact = wxContacts.getContact(user.UserName);
+                            if (oldContact != null && StringUtils.isEmpty(oldContact.name)) {
+                                oldContact = null;
                             }
+                            wxContacts.putContact(wxAPI.host, user);
+                            WXContact newContact = wxContacts.getContact(user.UserName);
+                            if (newContact != null && StringUtils.isEmpty(newContact.name)) {
+                                wxContacts.rmvContact(user.UserName);
+                                newContact = null;
+                            }
+                            handleContact(oldContact, newContact);
+                        }
+                    }
+                    if (rspSync.AddMsgList != null && !rspSync.AddMsgList.isEmpty()) {
+                        for (RspSync.AddMsg addMsg : rspSync.AddMsgList) {
+                            //接收到的消息，文字、图片、语音、地理位置等等
+                            WXMessage wxMessage = parseMessage(addMsg);
+                            if (wxMessage instanceof WXNotify) {
+                                //状态更新消息，需要处理后再交给监听器
+                                WXNotify wxNotify = (WXNotify) wxMessage;
+                                if (wxNotify.notifyCode == WXNotify.NOTIFY_SYNC_CONV) {
+                                    //会话同步，网页微信仅仅只获取了相关联系人详情
+                                    loadContacts(wxNotify.notifyContact, false);
+                                }
+                            }
+                            //最后交给监听器处理
+                            handleMessage(wxMessage);
                         }
                     }
                 }
-                return null;
-            } catch (Exception e) {
-                log.error( "监听消息异常:{}",e);
-                return e.getMessage();
             }
+            return null;
         }
 
         @Nonnull

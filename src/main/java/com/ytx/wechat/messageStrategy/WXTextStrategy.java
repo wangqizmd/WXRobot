@@ -4,12 +4,11 @@ import com.ytx.wechat.api.chat.ChatApi;
 import com.ytx.wechat.api.constellation.ConstellationApi;
 import com.ytx.wechat.api.weather.WeatherApi;
 import com.ytx.wechat.client.WeChatClient;
+import com.ytx.wechat.entity.contact.WXGroup;
 import com.ytx.wechat.entity.contact.WXUser;
-import com.ytx.wechat.listener.WeChatClientListener;
+import com.ytx.wechat.entity.message.WXMessage;
 import com.ytx.wechat.utils.GroupMsgUtil;
 import lombok.extern.slf4j.Slf4j;
-import com.ytx.wechat.entity.message.WXMessage;
-import com.ytx.wechat.entity.contact.WXGroup;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -90,7 +89,7 @@ public class WXTextStrategy implements MessageStrategy {
             message.toContact.permission=1;
         }
         if(flag){
-            client.sendText(message.toContact, "[玫瑰][玫瑰][玫瑰][玫瑰]您的的微信智能助手已上线，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
+//            client.sendText(message.toContact, "[玫瑰][玫瑰][玫瑰][玫瑰]您的的微信智能助手已上线，祝您玩的开心哦！！[玫瑰][玫瑰][玫瑰][玫瑰]");
         }
     }
 }

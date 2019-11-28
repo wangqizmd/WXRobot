@@ -52,7 +52,7 @@ final class WeChatApi {
      *
      * @return 登录二维码网址
      */
-    String jslogin() {
+    String getQrCode() {
         XRequest request = XRequest.GET("https://login.wx.qq.com/jslogin");
         request.query("_", time++);
         request.query("appid", "wx782c26e4c19acffb");
@@ -151,10 +151,10 @@ final class WeChatApi {
      *
      * @return 联系人列表
      */
-    RspGetContact webwxgetcontact() {
+    RspGetContact webwxgetcontact(int seq) {
         XRequest request = XRequest.GET(String.format("https://%s/cgi-bin/mmwebwx-bin/webwxgetcontact", host));
         request.query("r", System.currentTimeMillis());
-        request.query("seq", 0);
+        request.query("seq",seq);
         request.query("skey", this.skey);
         request.query("pass_ticket", this.passticket);
         return JSONObject.parseObject(XTools.http(httpExecutor, request).string(),RspGetContact.class);

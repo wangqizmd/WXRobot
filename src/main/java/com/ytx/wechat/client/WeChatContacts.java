@@ -3,15 +3,13 @@ package com.ytx.wechat.client;
 import com.ytx.wechat.config.GlobalConfig;
 import com.ytx.wechat.entity.contact.WXContact;
 import com.ytx.wechat.entity.contact.WXGroup;
+import com.ytx.wechat.entity.contact.WXOfficial;
 import com.ytx.wechat.entity.contact.WXUser;
 import com.ytx.wechat.protocol.RspInit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,56 +21,49 @@ final class WeChatContacts {
     private final HashMap<String, WXContact> contacts = new HashMap<>();
     private final HashMap<String, WXUser> friends = new HashMap<>();
     private final HashMap<String, WXGroup> groups = new HashMap<>();
+    private final HashMap<String, WXOfficial> officials = new HashMap<>();
     private WXUser me;
 
+    /**
+     * 特殊用户 须过滤
+     */
+    private final static Set<String> API_SPECIAL_USER = new HashSet<>(
+            Arrays.asList("newsapp", "filehelper", "weibo", "qqmail",
+                    "fmessage", "tmessage", "qmessage", "qqsync",
+                    "floatbottle", "lbsapp", "shakeapp", "medianote",
+                    "qqfriend", "readerapp", "blogapp", "facebookapp",
+                    "masssendapp", "meishiapp", "feedsapp", "voip",
+                    "blogappweixin", "brandsessionholder", "weixin",
+                    "weixinreminder", "officialaccounts", "wxitil",
+                    "notification_messages", "wxid_novlwrv3lqwv11",
+                    "gh_22b87fa7cb3c", "userexperience_alarm"));
+
     private static final String WHITELIST = GlobalConfig.getValue("friend.whitelist", "");
-
     private static final String BLACKLIST = GlobalConfig.getValue("friend.blacklist", "");
-
     private static final String GROUP_WHITELIST = GlobalConfig.getValue("group.whitelist", "");
-
     private static final String GROUP_WHITE_KEYWORD = GlobalConfig.getValue("group.whiteKeyword", "");
-
     private static final String GROUP_BLACKLIST = GlobalConfig.getValue("group.blacklist", "");
-
     private static final String GROUP_BLACK_KEYWORD = GlobalConfig.getValue("group.blackKeyword", "");
-
     private static final String GROUP_MODE_ONLY = GlobalConfig.getValue("group.modeOnly", "");
-
     private static final String GROUP_MODE_KEYWORD = GlobalConfig.getValue("group.modeOnlyKeyword", "");
 
     private static List<String> WHITE_LIST = new LinkedList<>();
-
     private static List<String> BLACK_LIST = new LinkedList<>();
-
     private static List<String> GROUP_WHITE_LIST = new LinkedList<>();
-
     private static List<String> GROUP_WHITE_KEYWORD_LIST = new LinkedList<>();
-
     private static List<String> GROUP_MODE_KEYWORD_LIST = new LinkedList<>();
-
     private static List<String> GROUP_MODE_ONLY_LIST = new LinkedList<>();
-
     private static List<String> GROUP_BLACK_KEYWORD_LIST = new LinkedList<>();
-
     private static List<String> GROUP_BLACK_LIST = new LinkedList<>();
 
     static {
-
         WHITE_LIST.addAll(Arrays.stream(WHITELIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         BLACK_LIST.addAll(Arrays.stream(BLACKLIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_WHITE_LIST.addAll(Arrays.stream(GROUP_WHITELIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_WHITE_KEYWORD_LIST.addAll(Arrays.stream(GROUP_WHITE_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_BLACK_KEYWORD_LIST.addAll(Arrays.stream(GROUP_BLACK_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_BLACK_LIST.addAll(Arrays.stream(GROUP_BLACKLIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_MODE_ONLY_LIST.addAll(Arrays.stream(GROUP_MODE_ONLY.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
-
         GROUP_MODE_KEYWORD_LIST.addAll(Arrays.stream(GROUP_MODE_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
     }
 
@@ -146,7 +137,23 @@ final class WeChatContacts {
     }
 
     private static <T extends WXContact> T parseContact(String host, RspInit.User contact) {
-        if (contact.UserName.startsWith("@@")) {
+
+        if (API_SPECIAL_USER.contains(contact.UserName)){
+            return null;
+        }else if (contact.getVerifyFlag() > 0 && contact.getVerifyFlag() % 8 == 0) {
+            //公众号/服务号
+            WXOfficial wxOfficial = new WXOfficial();
+            wxOfficial.id = contact.UserName;
+            wxOfficial.name = contact.NickName;
+            wxOfficial.namePY = contact.PYInitial;
+            wxOfficial.nameQP = contact.PYQuanPin;
+            wxOfficial.avatarUrl = String.format("https://%s%s", host, contact.HeadImgUrl);
+            wxOfficial.contactFlag = contact.ContactFlag;
+            wxOfficial.province = contact.Province;
+            wxOfficial.city = contact.City;
+            wxOfficial.signature = contact.Signature;
+            return (T) wxOfficial;
+        }else if (contact.UserName.startsWith("@@")) {
             WXGroup group = new WXGroup();
             group.id = contact.UserName;
             group.name = contact.NickName;
@@ -236,6 +243,14 @@ final class WeChatContacts {
         return this.groups;
     }
 
+    public WXOfficial getOfficial(String id) {
+        return this.officials.get(id);
+    }
+
+    public HashMap<String, WXOfficial> getOfficials() {
+        return officials;
+    }
+
     /**
      * 获取联系人信息
      *
@@ -253,11 +268,16 @@ final class WeChatContacts {
      */
     void setMe(String host, RspInit.User userMe) {
         this.me = WeChatContacts.parseContact(host, userMe);
-        this.contacts.put(this.me.id, this.me);
+        if(this.me != null){
+            this.contacts.put(this.me.id, this.me);
+        }
     }
 
     void putContact(String host, RspInit.User userContact) {
         WXContact contact = WeChatContacts.parseContact(host, userContact);
+        if(contact == null){
+            return;
+        }
         //更新权限，如果是在微信里面设置的权限，在这顺延下去
         WXContact oldContact = this.contacts.get(contact.id);
         if(oldContact!=null ){
@@ -267,14 +287,15 @@ final class WeChatContacts {
             rmvContact(contact.id);
         }
         this.contacts.put(contact.id, contact);
-        if (contact instanceof WXGroup) {
+        if (contact instanceof WXOfficial) {
+            WXOfficial official = (WXOfficial) contact;
+            officials.put(contact.id, official);
+        } else if (contact instanceof WXGroup) {
             WXGroup group = (WXGroup) contact;
             groups.put(group.id, group);
         } else {
             WXUser user = (WXUser) contact;
-            if ((user.contactFlag & WXContact.CONTACT) > 0) {
-                friends.put(user.id, user);
-            }
+            friends.put(user.id, user);
         }
     }
 
@@ -286,6 +307,7 @@ final class WeChatContacts {
     WXContact rmvContact(String userId) {
         this.groups.remove(userId);
         this.friends.remove(userId);
+        this.officials.remove(userId);
         return this.contacts.remove(userId);
     }
 }

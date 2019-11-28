@@ -74,7 +74,7 @@ public class WeChatClientListener extends WeChatClient.WeChatListener {
      */
     @Override
     public void onLogin(@Nonnull WeChatClient client) {
-        log.debug("登陆成功：您有{}名好友、活跃微信群{}个", client.userFriends().size(), client.userGroups().size());
+        log.debug("登陆成功：您有{}名好友、活跃微信群{}个,关注了{}个公众号", client.userFriends().size(), client.userGroups().size(),client.userOfficials().size());
         HashMap<String, WXGroup> group = client.userGroups();
         if(!group.isEmpty()){
             for (WXGroup wxGroup: group.values()) {

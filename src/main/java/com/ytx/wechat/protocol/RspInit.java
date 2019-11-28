@@ -1,7 +1,10 @@
 package com.ytx.wechat.protocol;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 
+@Data
 public class RspInit {
     public com.ytx.wechat.protocol.BaseResponse BaseResponse;
     public User User;
@@ -40,6 +43,7 @@ public class RspInit {
         }
     }
 
+    @Data
     public static class MPSubscribeMsg {
         public String UserName;
         public String NickName;
@@ -55,41 +59,98 @@ public class RspInit {
         }
     }
 
+    @Data
     public static class User {
         public long Uin;
+        /**
+         * 用户唯一标识，一个"@"为好友，两个"@"为群组
+         */
         public String UserName;
+        /**
+         * 微信昵称
+         */
         public String NickName;
+        /**
+         * 微信头像URL
+         */
         public String HeadImgUrl;
+        /**
+         * 备注名
+         */
         public String RemarkName;
+        /**
+         * 用户名拼音缩写
+         */
         public String PYInitial;
+        /**
+         * 用户名拼音全拼
+         */
         public String PYQuanPin;
+        /**
+         * 备注拼音缩写
+         */
         public String RemarkPYInitial;
+        /**
+         * 备注拼音全拼
+         */
         public String RemarkPYQuanPin;
+        /**
+         * 隐藏输入框
+         */
         public int HideInputBarFlag;
+        /**
+         * 星标朋友
+         */
         public int StarFriend;
+        /**
+         * 性别，0-未设置（公众号、保密），1-男，2-女
+         */
         public int Sex;
         public String Signature;
         public int AppAccountFlag;
         public int VerifyFlag;
+        /**
+         * 1-好友，2-群组，3-公众号
+         */
         public int ContactFlag;
         public int WebWxPluginSwitch;
         public int HeadImgFlag;
         public int SnsFlag;
 
+        ///////////////////群聊相关/////////////////////
+
         public long OwnerUin;
+        /**
+         * 成员数量，只有在群组信息中才有效
+         */
         public int MemberCount;
+        /**
+         * 群成员列表
+         */
         public ArrayList<User> MemberList;
         public long Statues;
         public long AttrStatus;
         public long MemberStatus;
+        /**
+         * 省
+         */
         public String Province;
+        /**
+         * 市
+         */
         public String City;
+        /**
+         * 别名
+         */
         public String Alias;
         public long UniFriend;
         public String DisplayName;
         public long ChatRoomId;
         public String KeyWord;
         public int IsOwner;
+        /**
+         * 群id
+         */
         public String EncryChatRoomId;
     }
 }

@@ -34,9 +34,14 @@ public class WXTextStrategy implements MessageStrategy {
                 log.info("自己向群\"{}\"发送消息，内容: {}", message.toContact.name,message.content);
                 setPermission(message,client);
             }else if(message.fromUser.id.equals(client.userMe().id)){
-                String name = StringUtils.isEmpty(((WXUser)message.toContact).remark) ? message.toContact.name : ((WXUser)message.toContact).remark;
-                log.info("自己向\"{}\"发送消息，内容: {}", name,message.content);
-                setPermission(message,client);
+                if(message.toContact!=null){
+                    String name = StringUtils.isEmpty(((WXUser)message.toContact).remark) ? message.toContact.name : ((WXUser)message.toContact).remark;
+                    log.info("自己向\"{}\"发送消息，内容: {}", name,message.content);
+                    setPermission(message,client);
+                }else{
+                    log.info("自己向文件助手发送消息，内容: {}", message.content);
+                }
+
             }else{
                 String name = StringUtils.isEmpty(message.fromUser.remark) ? message.fromUser.name : message.fromUser.remark;
                 log.info("收到消息。来自：{}，内容: {}", name,message.content);

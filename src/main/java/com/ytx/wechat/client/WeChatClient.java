@@ -39,6 +39,24 @@ public final class WeChatClient {
     private final WeChatContacts wxContacts = new WeChatContacts();
     private final WeChatApi wxAPI = new WeChatApi();
     private volatile WeChatClient.WeChatListener wxListener;
+    private String qrCode;
+    private Boolean loginFlag = false;
+
+    public Boolean getLoginFlag() {
+        return loginFlag;
+    }
+
+    public void setLoginFlag(Boolean loginFlag) {
+        this.loginFlag = loginFlag;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
 
     /**
      * 处理监听器，二维码事件
@@ -270,6 +288,9 @@ public final class WeChatClient {
         return wxContacts.getGroups();
     }
 
+    public HashMap<String, WXGroup> targets() {
+        return wxContacts.getTarget();
+    }
     /**
      * 根据userId获取用户好友
      *
@@ -315,13 +336,13 @@ public final class WeChatClient {
         RspSendMsg rspSendMsg = wxAPI.webwxsendmsg(new ReqSendMsg.Msg(RspSync.AddMsg.TYPE_TEXT, null, 0, text, null, wxContacts.getMe().id, wxContact.id));
 
         WXText wxText = new WXText();
-        wxText.id = Long.valueOf(rspSendMsg.MsgID);
-        wxText.idLocal = Long.valueOf(rspSendMsg.LocalID);
-        wxText.timestamp = System.currentTimeMillis();
-        wxText.fromGroup = null;
-        wxText.fromUser = wxContacts.getMe();
-        wxText.toContact = wxContact;
-        wxText.content = text;
+//        wxText.id = Long.valueOf(rspSendMsg.MsgID);
+//        wxText.idLocal = Long.valueOf(rspSendMsg.LocalID);
+//        wxText.timestamp = System.currentTimeMillis();
+//        wxText.fromGroup = null;
+//        wxText.fromUser = wxContacts.getMe();
+//        wxText.toContact = wxContact;
+//        wxText.content = text;
         return wxText;
     }
 
@@ -693,6 +714,7 @@ public final class WeChatClient {
                         handleFailure(initErr);
                         interrupt();
                     }
+                    loginFlag = true;
                     handleLogin();
                     //同步消息
                     log.debug("开始监听信息");
@@ -717,7 +739,7 @@ public final class WeChatClient {
         private String login() {
             try {
                 if (StringUtils.isEmpty(wxAPI.sid)) {
-                    String qrCode = wxAPI.getQrCode();
+                    qrCode = wxAPI.getQrCode();
                     log.info("等待扫描二维码：{}", qrCode);
                     handleQRCode(qrCode);
                     while (true) {
@@ -939,10 +961,12 @@ public final class WeChatClient {
                 //不是群消息
                 message.fromGroup = null;
                 try{
-                    message.fromUser = (WXUser) wxContacts.getContact(msg.FromUserName);
-                    if (message.fromUser == null) {
-                        //联系人不存在（一般不会出现这种情况），手动获取联系人
-                        message.fromUser = (WXUser) fetchContact(msg.FromUserName);
+                    if(wxContacts.getContact(msg.FromUserName) instanceof WXUser){
+                        message.fromUser = (WXUser) wxContacts.getContact(msg.FromUserName);
+                        if (message.fromUser == null) {
+                            //联系人不存在（一般不会出现这种情况），手动获取联系人
+                            message.fromUser = (WXUser) fetchContact(msg.FromUserName);
+                        }
                     }
                 }catch (Exception e){
                     log.error("content:{}",msg.Content);

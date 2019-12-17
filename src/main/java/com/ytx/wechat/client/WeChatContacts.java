@@ -22,6 +22,7 @@ final class WeChatContacts {
     private final HashMap<String, WXUser> friends = new HashMap<>();
     private final HashMap<String, WXGroup> groups = new HashMap<>();
     private final HashMap<String, WXOfficial> officials = new HashMap<>();
+    private final HashMap<String, WXGroup> target = new HashMap<>();
     private WXUser me;
 
     /**
@@ -46,6 +47,7 @@ final class WeChatContacts {
     private static final String GROUP_BLACK_KEYWORD = GlobalConfig.getValue("group.blackKeyword", "");
     private static final String GROUP_MODE_ONLY = GlobalConfig.getValue("group.modeOnly", "");
     private static final String GROUP_MODE_KEYWORD = GlobalConfig.getValue("group.modeOnlyKeyword", "");
+    private static final String GROUP_TARGET = GlobalConfig.getValue("group.target", "");
 
     private static List<String> WHITE_LIST = new LinkedList<>();
     private static List<String> BLACK_LIST = new LinkedList<>();
@@ -55,6 +57,7 @@ final class WeChatContacts {
     private static List<String> GROUP_MODE_ONLY_LIST = new LinkedList<>();
     private static List<String> GROUP_BLACK_KEYWORD_LIST = new LinkedList<>();
     private static List<String> GROUP_BLACK_LIST = new LinkedList<>();
+    private static List<String> GROUP_TARGET_LIST = new ArrayList<>();
 
     static {
         WHITE_LIST.addAll(Arrays.stream(WHITELIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
@@ -65,6 +68,7 @@ final class WeChatContacts {
         GROUP_BLACK_LIST.addAll(Arrays.stream(GROUP_BLACKLIST.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
         GROUP_MODE_ONLY_LIST.addAll(Arrays.stream(GROUP_MODE_ONLY.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
         GROUP_MODE_KEYWORD_LIST.addAll(Arrays.stream(GROUP_MODE_KEYWORD.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
+        GROUP_TARGET_LIST.addAll(Arrays.stream(GROUP_TARGET.split("#")).filter(StringUtils::isNotBlank).collect(Collectors.toList()));
     }
 
 
@@ -243,6 +247,10 @@ final class WeChatContacts {
         return this.groups;
     }
 
+    public HashMap<String, WXGroup> getTarget() {
+        return target;
+    }
+
     public WXOfficial getOfficial(String id) {
         return this.officials.get(id);
     }
@@ -293,6 +301,12 @@ final class WeChatContacts {
         } else if (contact instanceof WXGroup) {
             WXGroup group = (WXGroup) contact;
             groups.put(group.id, group);
+            for(String mode:GROUP_TARGET_LIST){
+                if(group.name.equals(mode)){
+                    target.put(group.id, group);
+                    break;
+                }
+            }
         } else {
             WXUser user = (WXUser) contact;
             friends.put(user.id, user);

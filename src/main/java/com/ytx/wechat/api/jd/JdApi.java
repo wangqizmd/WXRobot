@@ -1,9 +1,5 @@
 package com.ytx.wechat.api.jd;
 
-import com.jd.open.api.sdk.DefaultJdClient;
-import com.jd.open.api.sdk.JdClient;
-import jd.union.open.promotion.common.get.request.PromotionCodeReq;
-
 public class JdApi {
 
     public void dealMsg(){
